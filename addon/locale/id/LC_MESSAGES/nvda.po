@@ -1,0 +1,127 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: 'nvda-translations@groups.io'\n"
+"POT-Creation-Date: 2026-01-26 21:59+0700\n"
+"PO-Revision-Date: 2026-01-26 22:28+0700\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: id\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.8\n"
+"X-Poedit-Basepath: .\n"
+
+#. Translators: The format for reporting a bluetooth device.
+#. {0} is the device name. {1} is the status (e.g. Paired, Connected).
+#: addon\appModules\bluetoothaudioreceiver.py:46
+#, python-brace-format
+msgid "Device name: {0}, Status: {1}"
+msgstr "Nama perangkat: {0}, Status: {1}"
+
+#. Translators: Message when successfully connected to a device.
+#: addon\appModules\bluetoothaudioreceiver.py:85
+#, python-brace-format
+msgid "successfully connected with {}"
+msgstr "berhasil terhubung dengan {}"
+
+#. Translators: Message when successfully disconnected from a device.
+#: addon\appModules\bluetoothaudioreceiver.py:88
+#, python-brace-format
+msgid "successfully disconnected from {}"
+msgstr "berhasil memutus koneksi dari {}"
+
+#. Translators: Error message when connection status change times out.
+#: addon\appModules\bluetoothaudioreceiver.py:103
+#, python-brace-format
+msgid "Connection status change timed out for {}"
+msgstr "Perubahan status koneksi waktu habis selama {}"
+
+#. Translators: Description for the toggle connection script.
+#: addon\appModules\bluetoothaudioreceiver.py:110
+msgid "Connects or disconnects from the selected device."
+msgstr "Menghubungkan atau memutuskan sambungan dari perangkat yang dipilih."
+
+#. Translators: Error when disconnect button is not found.
+#: addon\appModules\bluetoothaudioreceiver.py:138
+msgid "Disconnect button not found"
+msgstr "Tombol putuskan sambungan tidak ditemukan"
+
+#. Translators: Message when starting disconnection.
+#: addon\appModules\bluetoothaudioreceiver.py:142
+#, python-brace-format
+msgid "Disconnecting from {}..."
+msgstr "Memutuskan sambungan dari {}..."
+
+#. Translators: Error when connect button is not found.
+#: addon\appModules\bluetoothaudioreceiver.py:156
+msgid "Connect button not found"
+msgstr "Tombol sambungkan tidak ditemukan"
+
+#. Translators: Message when starting connection.
+#: addon\appModules\bluetoothaudioreceiver.py:160
+#, python-brace-format
+msgid "Connecting to {}..."
+msgstr "Menghubungkan ke {}..."
+
+#: addon\appModules\bluetoothaudioreceiver.py:170
+msgid "Failed to toggle connection."
+msgstr "Gagal mengalihkan koneksi."
+
+#. Translators: The category for scripts in this app module.
+#. Translators: The category for scripts in this global plugin.
+#: addon\appModules\bluetoothaudioreceiver.py:174
+#: addon\globalPlugins\accessibleBluetoothAudioReceiver\__init__.py:30
+msgid "Bluetooth Audio Receiver"
+msgstr "Bluetooth Audio Receiver"
+
+#. Translators: Description for the launch script.
+#: addon\globalPlugins\accessibleBluetoothAudioReceiver\__init__.py:54
+msgid "Launches Bluetooth Audio Receiver"
+msgstr "Menjalankan Bluetooth Audio Receiver"
+
+#. Just warn the user
+#. Translators: Message displayed when the application is already running.
+#: addon\globalPlugins\accessibleBluetoothAudioReceiver\__init__.py:77
+msgid "Bluetooth Audio Receiver is already running."
+msgstr "Bluetooth Audio Receiver sudah berjalan."
+
+#. Translators: Message launching the application.
+#: addon\globalPlugins\accessibleBluetoothAudioReceiver\__init__.py:86
+msgid "Launching Bluetooth Audio Receiver"
+msgstr "Menjalankan Bluetooth Audio Receiver"
+
+#. Translators: Error message when launch fails.
+#: addon\globalPlugins\accessibleBluetoothAudioReceiver\__init__.py:96
+#, python-brace-format
+msgid "Failed to launch: {}"
+msgstr "Gagal menjalankan: {}"
+
+#: buildVars.py:6
+msgid "Accessible Bluetooth Audio Receiver"
+msgstr "Aksesibel Bluetooth Audio Receiver"
+
+#: buildVars.py:7
+msgid ""
+"Effortlessly stream audio from your phone to your PC!\n"
+"\tThis add-on supercharges the Bluetooth Audio Receiver app with global "
+"hotkeys and smart connection toggling.\n"
+"\tNo more menu diving, just press one key to connect or disconnect.\n"
+"\tExperience seamless audio control like never before. Check the readme for "
+"more details!"
+msgstr ""
+"Streaming audio dengan mudah dari ponsel Anda ke PC Anda!\n"
+"\tAdd-on ini meningkatkan kemampuan aplikasi Bluetooth Audio Receiver "
+"dengan hotkey global dan pengalihan koneksi cerdas.\n"
+"\tTidak perlu lagi menjelajahi menu, cukup tekan satu tombol untuk "
+"menyambungkan atau memutuskan sambungan.\n"
+"\tRasakan kontrol audio yang mulus yang belum pernah ada sebelumnya. "
+"Periksa readme untuk detail lebih lanjut!"
+
+#: buildVars.py:12
+msgid "Initial Release."
+msgstr "Rilis Awal."
+
+#~ msgid "\n"
+#~ msgstr "\n"
