@@ -28,22 +28,25 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		# Explicitly map the app name to our app module.
 		try:
 			appModuleHandler.registerExecutableWithAppModule(
-				"Bluetooth Audio Receiver.exe", "bluetoothaudioreceiver"
+				"Bluetooth Audio Receiver.exe",
+				"bluetoothaudioreceiver",
 			)
 			appModuleHandler.registerExecutableWithAppModule(
-				"Bluetooth Audio Reveicer.exe", "bluetoothaudioreceiver"
+				"Bluetooth Audio Reveicer.exe",
+				"bluetoothaudioreceiver",
 			)
 			# Register simplified names if needed
 			appModuleHandler.registerExecutableWithAppModule(
-				"bluetooth audio reveicer", "bluetoothaudioreceiver"
+				"bluetooth audio reveicer",
+				"bluetoothaudioreceiver",
 			)
 		except Exception as e:
 			log.debugWarning(f"Error registering app module mappings: {e}")
 
 	@scriptHandler.script(
 		# Translators: Description for the launch script.
-		description=_("Launches Bluetooth Audio Receiver"), 
-		gesture="kb:NVDA+windows+b"
+		description=_("Launches Bluetooth Audio Receiver"),
+		gesture="kb:NVDA+windows+b",
 	)
 	def script_launchApp(self, gesture: Any) -> None:
 		"""
@@ -56,7 +59,8 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		try:
 			# Check for ApplicationFrameWindow (UWP wrapper) with title
 			hwnd = winUser.FindWindow(
-				"ApplicationFrameWindow", "Bluetooth Audio Receiver"
+				"ApplicationFrameWindow",
+				"Bluetooth Audio Receiver",
 			)
 			if not hwnd:
 				# Check for direct window
@@ -76,8 +80,10 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 				ui.message(_("Launching Bluetooth Audio Receiver"))
 				time.sleep(0.2)
 
-				# Using the AUMID provided. 
-				launchCmd = r"start shell:AppsFolder\55746MarkSmirnov.BluetoothAudioReveicer_xwrbx6997tsfc!App"
+				# Using the AUMID provided.
+				launchCmd = (
+					r"start shell:AppsFolder\55746MarkSmirnov.BluetoothAudioReveicer_xwrbx6997tsfc!App"
+				)
 				os.system(launchCmd)
 			except Exception as e:
 				log.error(f"Failed to launch application: {e}")
