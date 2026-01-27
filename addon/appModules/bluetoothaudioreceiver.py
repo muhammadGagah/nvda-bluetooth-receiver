@@ -41,7 +41,8 @@ class BluetoothListItem(NVDAObject):
 				# Translators: The format for reporting a bluetooth device.
 				# {0} is the device name. {1} is the status (e.g. Paired, Connected).
 				return _("Device name: {0}, Status: {1}").format(
-					match.group(1), match.group(2)
+					match.group(1),
+					match.group(2),
 				)
 			return text
 		except Exception:
@@ -59,9 +60,7 @@ class BluetoothListItem(NVDAObject):
 			isConnected = "Connected" in currentText
 
 			# Check if we reached the desired state
-			if (targetConnected and isConnected) or (
-				not targetConnected and not isConnected
-			):
+			if (targetConnected and isConnected) or (not targetConnected and not isConnected):
 				statusMsg = (
 					# Translators: Message when successfully connected to a device.
 					_("successfully connected with {}")
@@ -126,7 +125,10 @@ class BluetoothListItem(NVDAObject):
 
 				# 3. Monitor for Disconnection
 				wx.CallLater(
-					MONITOR_INTERVAL_MS, self._monitorConnection, deviceName, False
+					MONITOR_INTERVAL_MS,
+					self._monitorConnection,
+					deviceName,
+					False,
 				)
 
 			else:
@@ -144,12 +146,16 @@ class BluetoothListItem(NVDAObject):
 
 				# 3. Monitor for Connection
 				wx.CallLater(
-					MONITOR_INTERVAL_MS, self._monitorConnection, deviceName, True
+					MONITOR_INTERVAL_MS,
+					self._monitorConnection,
+					deviceName,
+					True,
 				)
 
 		except Exception as e:
 			log.error(f"Failed to toggle connection: {e}")
 			ui.message(_("Failed to toggle connection."))
+
 
 class AppModule(appModuleHandler.AppModule):
 	# Translators: The category for scripts in this app module.
