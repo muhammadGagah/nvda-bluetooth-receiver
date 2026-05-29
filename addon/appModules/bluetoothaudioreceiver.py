@@ -21,6 +21,14 @@ addonHandler.initTranslation()
 # Constants for connection monitoring
 MONITOR_INTERVAL_MS = 500
 MONITOR_MAX_ATTEMPTS = 20  # Approx 10 seconds
+DEVICE_STATUS_PATTERN = re.compile(r"^\[(?P<deviceName>.*?)\]\s*(?P<status>.*)$")
+
+
+def _parseDeviceStatus(text: str) -> tuple[str, str]:
+	match = DEVICE_STATUS_PATTERN.match(text)
+	if not match:
+		return text, text
+	return match.group("deviceName"), match.group("status")
 
 
 class BluetoothListItem(NVDAObject):
@@ -34,29 +42,40 @@ class BluetoothListItem(NVDAObject):
 		"""
 		Returns the friendly name of the device, parsing the status if relevant.
 		"""
-		try:
-			text = self.parent.previous.name
-			match = re.match(r"^\[(.*?)\]\s*(.*)$", text)
-			if match:
+		text = self._getStatusText()
+		if text:
+			deviceName, statusText = _parseDeviceStatus(text)
+			if (deviceName, statusText) != (text, text):
 				# Translators: The format for reporting a bluetooth device.
 				# {0} is the device name. {1} is the status (e.g. Paired, Connected).
 				return _("Device name: {0}, Status: {1}").format(
-					match.group(1),
-					match.group(2),
+					deviceName,
+					statusText,
 				)
 			return text
-		except Exception:
-			# Fallback to default name if traversal fails
-			return super().name
+		return super().name
+
+	def _getStatusText(self) -> str | None:
+		try:
+			return self.parent.previous.name
+		except AttributeError:
+			return None
+
+	def _getToggleButton(self, isConnected: bool) -> NVDAObject | None:
+		try:
+			connectButton = self.parent.next
+			if not isConnected:
+				return connectButton
+			return connectButton.next
+		except AttributeError:
+			return None
 
 	def _monitorConnection(self, deviceName: str, targetConnected: bool, attempt: int = 0) -> None:
 		try:
-			# Re-fetch status from the UI
-			if not self.parent or not self.parent.previous:
-				# UI might have changed, stop monitoring
+			currentText = self._getStatusText()
+			if not currentText:
 				return
 
-			currentText = self.parent.previous.name
 			isConnected = "Connected" in currentText
 
 			# Check if we reached the desired state
@@ -82,9 +101,8 @@ class BluetoothListItem(NVDAObject):
 			else:
 				# Translators: Error message when connection status change times out.
 				ui.message(_("Connection status change timed out for {}").format(deviceName))
-		except Exception as e:
-			log.debugWarning(f"Error in _monitorConnection: {e}")
-			pass
+		except Exception:
+			log.debugWarning("Error while monitoring Bluetooth connection status", exc_info=True)
 
 	@scriptHandler.script(
 		# Translators: Description for the toggle connection script.
@@ -96,24 +114,18 @@ class BluetoothListItem(NVDAObject):
 		Toggles the connection state of the selected bluetooth device.
 		"""
 		try:
-			# 1. Get Status and Name
-			if not self.parent or not self.parent.previous:
+			rawText = self._getStatusText()
+			if not rawText:
 				return
 
-			infoObj = self.parent.previous
-			rawText = infoObj.name
-
-			match = re.match(r"^\[(.*?)\]\s*(.*)$", rawText)
-			deviceName = match.group(1) if match else rawText
-			statusText = match.group(2) if match else rawText
-
+			deviceName, statusText = _parseDeviceStatus(rawText)
 			isConnected = "Connected" in statusText
 
 			# 2. Determine Action
 			if isConnected:
 				# Disconnect Logic
 				# Verify UI structure for Disconnect button
-				targetButton = self.parent.next.next
+				targetButton = self._getToggleButton(isConnected=True)
 				if not targetButton:
 					# Translators: Error when disconnect button is not found.
 					ui.message(_("Disconnect button not found"))
@@ -134,7 +146,7 @@ class BluetoothListItem(NVDAObject):
 			else:
 				# Connect Logic
 				# Verify UI structure for Connect button
-				targetButton = self.parent.next
+				targetButton = self._getToggleButton(isConnected=False)
 				if not targetButton:
 					# Translators: Error when connect button is not found.
 					ui.message(_("Connect button not found"))

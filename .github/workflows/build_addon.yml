@@ -7,48 +7,50 @@ on:
     # branches: [ main , master ]
 
   pull_request:
-    branches: [main, master]
+    branches: [ main, master ]
 
   workflow_dispatch:
 
 jobs:
   build:
+    # Building the add-on template as an add-on does not make sense (and fails).
+    # Do not modify this repo name with your own one! (should remain the template)
+    if: github.repository != 'nvaccess/addonTemplate'
+
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v6
+    - name: Checkout repo
+      uses: actions/checkout@v6
+    - name: Install uv
+      uses: astral-sh/setup-uv@v7
+      with:
+        enable-cache: true
+    - name: Install dependencies
+      run: |
+        sudo apt-get update  -y
+        sudo apt-get install -y gettext
+        uv sync
 
-      - run: echo -e "pre-commit\nscons\nmarkdown">requirements.txt
+    - name: Code checks
+      run: export SKIP=no-commit-to-branch; uv run pre-commit run --all-files
 
-      - name: Set up Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: 3.11
-          cache: "pip"
+    - name: building addon
+      run: uv run scons && uv run scons pot
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip wheel
-          pip install -r requirements.txt
-          pip install uv
-          sudo apt-get update  -y
-          sudo apt-get install -y gettext
+    - uses: actions/upload-artifact@v7
+      with:
+        name: packaged_addon
+        path: |
+          ./*.nvda-addon
+        archive: false
 
-      - name: Install pyright
-        run: pip install pyright
-
-      - name: Code checks
-        run: export SKIP=no-commit-to-branch; pre-commit run --all
-
-      - name: building addon
-        run: scons && scons pot
-
-      - uses: actions/upload-artifact@v7
-        with:
-          name: packaged_addon
-          path: |
-            ./*.nvda-addon
-            ./*.pot
+    - uses: actions/upload-artifact@v7
+      with:
+        name: translation_template
+        path: |
+          ./*.pot
+        archive: false
 
   upload_release:
     runs-on: ubuntu-latest
@@ -57,22 +59,25 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v6
-      - name: download releases files
-        uses: actions/download-artifact@v8
-      - name: Display structure of downloaded files
-        run: ls -R
-      - name: Calculate sha256
-        run: |
-          echo -e "\nSHA256: " >> changelog.md
-          sha256sum *.nvda-addon >> changelog.md
+    - uses: actions/checkout@v6
+    - name: download all artifacts
+      uses: actions/download-artifact@v8
+      with:
+        path: .
+        merge-multiple: true
+    - name: Display structure of downloaded files
+      run: ls -R
+    - name: Calculate sha256
+      run: |
+        echo -e "\nSHA256: " >> changelog.md
+        sha256sum *.nvda-addon >> changelog.md
 
-      - name: Release
-        uses: softprops/action-gh-release@v3
-        with:
-          files: |
-            *.nvda-addon
-            *.pot
-          body_path: changelog.md
-          fail_on_unmatched_files: true
-          prerelease: ${{ contains(github.ref, '-') }}
+    - name: Release
+      uses: softprops/action-gh-release@v3
+      with:
+        files: |
+          *.nvda-addon
+          *.pot
+        body_path: changelog.md
+        fail_on_unmatched_files: true
+        prerelease: ${{ contains(github.ref, '-') }}

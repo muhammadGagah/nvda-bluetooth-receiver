@@ -1,6 +1,6 @@
 # Accessible Bluetooth Audio Receiver
 
-![Add-on Version](https://img.shields.io/badge/Version-1.1-blue)
+![Add-on Version](https://img.shields.io/badge/Version-1.2.0-blue)
 ![NVDA Compatible](https://img.shields.io/badge/NVDA-Compatible-green)
 
 **Accessible Bluetooth Audio Receiver** is an add-on for the NVDA screen reader designed to improve the accessibility and usability of the [Bluetooth Audio Receiver](https://apps.microsoft.com/detail/9N9WCLWDQS5J?hl=en&gl=US&ocid=pdpshare) application on Windows.
