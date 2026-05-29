@@ -13,6 +13,7 @@ The following environment variables are required to create the manifest:
 - addon_info: .typing.AddonInfo
 - brailleTables: .typings.BrailleTables
 - symbolDictionaries: .typings.SymbolDictionaries
+- speechDictionaries: .typings.SpeechDictionaries
 
 The following environment variables are required to build the HTML:
 
@@ -55,6 +56,7 @@ def generate(env: Environment):
 
 	env.SetDefault(brailleTables={})
 	env.SetDefault(symbolDictionaries={})
+	env.SetDefault(speechDictionaries={})
 
 	def manifest_action(target: list[Any], source: list[Any], env: Any):
 		return (
@@ -64,6 +66,7 @@ def generate(env: Environment):
 				addon_info=env["addon_info"],
 				brailleTables=env["brailleTables"],
 				symbolDictionaries=env["symbolDictionaries"],
+				speechDictionaries=env["speechDictionaries"],
 			)
 			and None
 		)
@@ -87,6 +90,7 @@ def generate(env: Environment):
 				addon_info=env["addon_info"],
 				brailleTables=env["brailleTables"],
 				symbolDictionaries=env["symbolDictionaries"],
+				speechDictionaries=env["speechDictionaries"],
 			)
 			and None
 		)
