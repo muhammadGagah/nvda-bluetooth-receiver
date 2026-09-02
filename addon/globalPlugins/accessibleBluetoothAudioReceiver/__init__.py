@@ -26,14 +26,14 @@ APP_EXECUTABLE_ALIASES = (
 )
 
 
-def _isAppWindowVisible() -> bool:
+def _getAppWindow() -> int:
 	hwnd = winUser.FindWindow(
 		"ApplicationFrameWindow",
 		APP_WINDOW_TITLE,
 	)
 	if not hwnd:
 		hwnd = winUser.FindWindow(None, APP_WINDOW_TITLE)
-	return bool(hwnd and winUser.isWindowVisible(hwnd))
+	return hwnd if hwnd and winUser.isWindowVisible(hwnd) else 0
 
 
 class GlobalPlugin(globalPluginHandler.GlobalPlugin):
@@ -75,7 +75,9 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		Checks if it is already running to avoid multiple instances.
 		"""
 		try:
-			if _isAppWindowVisible():
+			hwnd = _getAppWindow()
+			if hwnd:
+				winUser.setForegroundWindow(hwnd)
 				# Translators: Message displayed when the application is already running.
 				ui.message(_("Bluetooth Audio Receiver is already running."))
 				return

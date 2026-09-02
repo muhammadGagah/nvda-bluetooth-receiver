@@ -1,28 +1,30 @@
-v1.2.0
+# Version 1.3.0
 
-Compatibility
-- Updated add-on metadata for NVDA 2026.1.1 while keeping the minimum supported NVDA version at 2024.1.
-- Confirmed the add-on does not directly use the NVDA 2026.1 APIs that were removed or changed.
-- Kept the add-on runtime dependency-free: it still uses NVDA APIs, Python standard library modules, and wx/NVDA-provided components only.
+## Compatibility
 
-Build and packaging
-- Synced the add-on build layout with the current nvaccess/AddonTemplate workflow.
-- Added `pyproject.toml` project metadata and `uv.lock` so build, lint, type checking, and packaging dependencies are resolved with `uv`.
-- Updated CI to use `astral-sh/setup-uv`, `uv sync`, `uv run pre-commit`, `uv run scons`, and `uv run scons pot`.
-- Updated the add-on build helpers to support the newer template `speechDictionaries` configuration.
-- Updated manifest generation so optional values such as `updateChannel = None` are omitted from the generated manifest.
-- Included source and license metadata in the generated manifest: `sourceURL`, `license`, and `licenseURL`.
+- Updated and tested the add-on metadata for NVDA 2026.2.
+- Kept the minimum supported NVDA version at 2024.1.
+- Updated the build templates and manifest metadata for current NVDA add-on requirements.
 
-Runtime changes
-- Registered Bluetooth Audio Receiver app module aliases using normalized executable names.
-- Added cleanup so app module aliases are unregistered when the global plugin is unloaded.
-- Replaced the old shell launch command with `os.startfile` for the Microsoft Store app URI.
-- Removed the blocking launch delay.
-- Centralized Bluetooth device status parsing and reduced silent broad exception handling in the app module.
+## Bluetooth Behavior
 
-Localization and documentation
-- Updated Indonesian translation strings for the new install message and add-on changelog.
-- Updated the README version badge to 1.2.0.
+- Improved recognition of localized connected and disconnected status text.
+- Added safe handling for unknown and transitional connection states instead of assuming a device is disconnected.
+- Added retry and timeout reporting while waiting for a connection-state change.
+- Limited the custom Enter action to rows that expose a valid Bluetooth device status.
+- Preserved the application's native Enter behavior for unsupported or non-device rows.
+- Restored focus to the selected device row after connecting, disconnecting, or timing out.
 
-v1.1
-- Initial release.
+## Application and Accessibility
+
+- Brought an existing Bluetooth Audio Receiver window to the foreground instead of opening another instance.
+- Improved reporting of device names and connection status.
+- Added safer fallbacks when expected Connect or Disconnect controls cannot be found.
+
+## Build and Packaging
+
+- Removed `__pycache__`, `.pyc`, and `.pyo` files from release packages.
+- Removed the invalid `updateChannel = "None"` manifest entry when no update channel is configured.
+- Included source URL and license metadata in the generated manifest.
+- Fixed the add-on build helper source-suffix configuration.
+- Updated documentation and version badges for version 1.3.0.

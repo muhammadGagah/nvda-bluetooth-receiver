@@ -4,6 +4,7 @@
 # addon/appModules/bluetoothaudioreceiver.py
 
 import re
+import unicodedata
 from typing import Any
 import wx
 
@@ -29,6 +30,32 @@ def _parseDeviceStatus(text: str) -> tuple[str, str]:
 	if not match:
 		return text, text
 	return match.group("deviceName"), match.group("status")
+
+
+def _isConnectedStatus(statusText: str) -> bool | None:
+	"""Return connection state, or None when the localized status is unknown."""
+	status = "".join(
+		character
+		for character in unicodedata.normalize("NFKD", statusText.casefold())
+		if not unicodedata.combining(character)
+	)
+	# ponytail: localized text heuristic; replace with a stable UIA state if the app exposes one.
+	disconnectedTokens = (
+		"disconnected",
+		"not connected",
+		"terputus",
+		"tidak terhubung",
+		"tidak tersambung",
+		"getrennt",
+		"nicht verbunden",
+		"deconnecte",
+	)
+	if any(token in status for token in disconnectedTokens):
+		return False
+	connectedTokens = ("connected", "terhubung", "tersambung", "verbunden", "connecte")
+	if any(token in status for token in connectedTokens):
+		return True
+	return None
 
 
 class BluetoothListItem(NVDAObject):
@@ -74,9 +101,33 @@ class BluetoothListItem(NVDAObject):
 		try:
 			currentText = self._getStatusText()
 			if not currentText:
+				if attempt < MONITOR_MAX_ATTEMPTS:
+					wx.CallLater(
+						MONITOR_INTERVAL_MS,
+						self._monitorConnection,
+						deviceName,
+						targetConnected,
+						attempt + 1,
+					)
+				else:
+					# Translators: Error message when connection status change times out.
+					ui.message(_("Connection status change timed out for {}").format(deviceName))
 				return
 
-			isConnected = "Connected" in currentText
+			statusText = _parseDeviceStatus(currentText)[1]
+			isConnected = _isConnectedStatus(statusText)
+			if isConnected is None:
+				if attempt < MONITOR_MAX_ATTEMPTS:
+					wx.CallLater(
+						MONITOR_INTERVAL_MS,
+						self._monitorConnection,
+						deviceName,
+						targetConnected,
+						attempt + 1,
+					)
+				else:
+					ui.message(_("Connection status change timed out for {}").format(deviceName))
+				return
 
 			# Check if we reached the desired state
 			if (targetConnected and isConnected) or (not targetConnected and not isConnected):
@@ -88,6 +139,7 @@ class BluetoothListItem(NVDAObject):
 					else _("successfully disconnected from {}")
 				)
 				ui.message(statusMsg.format(deviceName))
+				wx.CallAfter(self._restoreFocus)
 				return
 
 			if attempt < MONITOR_MAX_ATTEMPTS:
@@ -101,8 +153,16 @@ class BluetoothListItem(NVDAObject):
 			else:
 				# Translators: Error message when connection status change times out.
 				ui.message(_("Connection status change timed out for {}").format(deviceName))
+				wx.CallAfter(self._restoreFocus)
 		except Exception:
 			log.debugWarning("Error while monitoring Bluetooth connection status", exc_info=True)
+
+	def _restoreFocus(self) -> None:
+		"""Return focus to the device row after the app refreshes its controls."""
+		try:
+			self.setFocus()
+		except Exception:
+			log.debugWarning("Unable to restore focus to Bluetooth device row", exc_info=True)
 
 	@scriptHandler.script(
 		# Translators: Description for the toggle connection script.
@@ -116,10 +176,17 @@ class BluetoothListItem(NVDAObject):
 		try:
 			rawText = self._getStatusText()
 			if not rawText:
+				gesture.send()
 				return
 
 			deviceName, statusText = _parseDeviceStatus(rawText)
-			isConnected = "Connected" in statusText
+			if (deviceName, statusText) == (rawText, rawText):
+				gesture.send()
+				return
+			isConnected = _isConnectedStatus(statusText)
+			if isConnected is None:
+				gesture.send()
+				return
 
 			# 2. Determine Action
 			if isConnected:
@@ -129,11 +196,13 @@ class BluetoothListItem(NVDAObject):
 				if not targetButton:
 					# Translators: Error when disconnect button is not found.
 					ui.message(_("Disconnect button not found"))
+					gesture.send()
 					return
 
 				# Translators: Message when starting disconnection.
 				ui.message(_("Disconnecting from {}...").format(deviceName))
 				targetButton.doAction()
+				wx.CallAfter(self._restoreFocus)
 
 				# 3. Monitor for Disconnection
 				wx.CallLater(
@@ -150,11 +219,13 @@ class BluetoothListItem(NVDAObject):
 				if not targetButton:
 					# Translators: Error when connect button is not found.
 					ui.message(_("Connect button not found"))
+					gesture.send()
 					return
 
 				# Translators: Message when starting connection.
 				ui.message(_("Connecting to {}...").format(deviceName))
 				targetButton.doAction()
+				wx.CallAfter(self._restoreFocus)
 
 				# 3. Monitor for Connection
 				wx.CallLater(
@@ -175,7 +246,12 @@ class AppModule(appModuleHandler.AppModule):
 
 	def chooseNVDAObjectOverlayClasses(self, obj: NVDAObject, clsList: list[Any]) -> None:
 		"""
-		Injects the BluetoothListItem overlay for list items.
+		Inject the overlay only for rows that expose the expected device status.
 		"""
 		if obj.role == controlTypes.Role.LISTITEM:
-			clsList.insert(0, BluetoothListItem)
+			try:
+				rawText = obj.parent.previous.name
+				if rawText and _parseDeviceStatus(rawText) != (rawText, rawText):
+					clsList.insert(0, BluetoothListItem)
+			except AttributeError:
+				pass
