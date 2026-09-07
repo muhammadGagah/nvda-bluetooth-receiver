@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Accessible Bluetooth Audio Receiver for NVDA
 # Copyright (C) 2026 Muhammad
 # addon/appModules/bluetoothaudioreceiver.py
@@ -6,15 +5,15 @@
 import re
 import unicodedata
 from typing import Any
-import wx
 
 import addonHandler
 import appModuleHandler
 import controlTypes
 import scriptHandler
 import ui
-from NVDAObjects import NVDAObject
+import wx
 from logHandler import log
+from NVDAObjects import NVDAObject
 
 # Initialize translation
 addonHandler.initTranslation()
