@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Accessible Bluetooth Audio Receiver for NVDA
 # Copyright (C) 2026 Muhammad
 # addon/globalPlugins/accessibleBluetoothAudioReceiver/__init__.py
