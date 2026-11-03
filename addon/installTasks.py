@@ -1,11 +1,9 @@
-# -*- coding: utf-8 -*-
 # Accessible Bluetooth Audio Receiver for NVDA
 # Copyright (C) 2026 Muhammad
 
 import addonHandler
 import gui
 import wx
-
 
 # Initialize translation
 addonHandler.initTranslation()
