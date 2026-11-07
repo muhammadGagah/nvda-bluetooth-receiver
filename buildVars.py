@@ -13,18 +13,18 @@ addon_info = AddonInfo(
 	This add-on supercharges the Bluetooth Audio Receiver app with global hotkeys and smart connection toggling.
 	No more menu diving, just press one key to connect or disconnect.
 	Experience seamless audio control like never before. Check the readme for more details!"""),
-	addon_version="1.3.0",
-	addon_changelog=_("""Updated compatibility for NVDA 2026.2.
-Improved localized Bluetooth connection-state detection and transitional-state handling.
-Restored focus to the selected device after connect or disconnect operations.
-Limited Enter handling to valid device rows and preserved native behavior elsewhere.
-Improved application foregrounding, packaging cleanliness, and manifest metadata."""),
+	addon_version="1.3.1",
+	addon_changelog=_("""Tested with NVDA 2026.3.
+Fixed device rows becoming unreadable when the app refreshes its list while NVDA reads it.
+Connection monitoring now keeps waiting and reports a timeout instead of stopping silently.
+Focus now returns to the device row after every timeout.
+The launch command now restores the app window when it is minimized."""),
 	addon_author="Muhammad <muha.aku@gmail.com>",
 	addon_url="https://github.com/muhammadGagah/nvda-bluetooth-receiver",
 	addon_sourceURL="https://github.com/muhammadGagah/nvda-bluetooth-receiver",
 	addon_docFileName="readme.html",
 	addon_minimumNVDAVersion="2024.1",
-	addon_lastTestedNVDAVersion="2026.2",
+	addon_lastTestedNVDAVersion="2026.3",
 	addon_updateChannel=None,
 	addon_license="GPL-2.0",
 	addon_licenseURL="https://www.gnu.org/licenses/gpl-2.0.html",

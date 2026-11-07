@@ -25,6 +25,20 @@ MONITOR_MAX_ATTEMPTS = 20  # Approx 10 seconds
 DEVICE_STATUS_PATTERN = re.compile(r"^\[(?P<deviceName>.*?)\]\s*(?P<status>.*)$")
 
 
+def _getStatusTextFor(obj: NVDAObject) -> str | None:
+	"""Return the device status label shown before a device row, or None if unavailable.
+
+	The row and its neighbours are UIA elements in another process, so a stale element can
+	raise COMError or other errors, not only AttributeError. This runs during overlay
+	selection, where an escaping exception would break NVDA's object creation.
+	"""
+	try:
+		return obj.parent.previous.name
+	except Exception:
+		log.debugWarning("Unable to read the Bluetooth device status label", exc_info=True)
+		return None
+
+
 def _parseDeviceStatus(text: str) -> tuple[str, str]:
 	match = DEVICE_STATUS_PATTERN.match(text)
 	if not match:
@@ -83,10 +97,7 @@ class BluetoothListItem(NVDAObject):
 		return super().name
 
 	def _getStatusText(self) -> str | None:
-		try:
-			return self.parent.previous.name
-		except AttributeError:
-			return None
+		return _getStatusTextFor(self)
 
 	def _getToggleButton(self, isConnected: bool) -> NVDAObject | None:
 		try:
@@ -94,43 +105,15 @@ class BluetoothListItem(NVDAObject):
 			if not isConnected:
 				return connectButton
 			return connectButton.next
-		except AttributeError:
+		except Exception:
+			log.debugWarning("Unable to locate the Bluetooth connect button", exc_info=True)
 			return None
 
 	def _monitorConnection(self, deviceName: str, targetConnected: bool, attempt: int = 0) -> None:
 		try:
 			currentText = self._getStatusText()
-			if not currentText:
-				if attempt < MONITOR_MAX_ATTEMPTS:
-					wx.CallLater(
-						MONITOR_INTERVAL_MS,
-						self._monitorConnection,
-						deviceName,
-						targetConnected,
-						attempt + 1,
-					)
-				else:
-					# Translators: Error message when connection status change times out.
-					ui.message(_("Connection status change timed out for {}").format(deviceName))
-				return
-
-			statusText = _parseDeviceStatus(currentText)[1]
-			isConnected = _isConnectedStatus(statusText)
-			if isConnected is None:
-				if attempt < MONITOR_MAX_ATTEMPTS:
-					wx.CallLater(
-						MONITOR_INTERVAL_MS,
-						self._monitorConnection,
-						deviceName,
-						targetConnected,
-						attempt + 1,
-					)
-				else:
-					ui.message(_("Connection status change timed out for {}").format(deviceName))
-				return
-
-			# Check if we reached the desired state
-			if (targetConnected and isConnected) or (not targetConnected and not isConnected):
+			isConnected = _isConnectedStatus(_parseDeviceStatus(currentText)[1]) if currentText else None
+			if isConnected is not None and isConnected == targetConnected:
 				statusMsg = (
 					# Translators: Message when successfully connected to a device.
 					_("successfully connected with {}")
@@ -141,21 +124,21 @@ class BluetoothListItem(NVDAObject):
 				ui.message(statusMsg.format(deviceName))
 				wx.CallAfter(self._restoreFocus)
 				return
-
-			if attempt < MONITOR_MAX_ATTEMPTS:
-				wx.CallLater(
-					MONITOR_INTERVAL_MS,
-					self._monitorConnection,
-					deviceName,
-					targetConnected,
-					attempt + 1,
-				)
-			else:
-				# Translators: Error message when connection status change times out.
-				ui.message(_("Connection status change timed out for {}").format(deviceName))
-				wx.CallAfter(self._restoreFocus)
 		except Exception:
 			log.debugWarning("Error while monitoring Bluetooth connection status", exc_info=True)
+		# Missing, unknown, or not-yet-changed status: keep polling until the timeout.
+		if attempt < MONITOR_MAX_ATTEMPTS:
+			wx.CallLater(
+				MONITOR_INTERVAL_MS,
+				self._monitorConnection,
+				deviceName,
+				targetConnected,
+				attempt + 1,
+			)
+			return
+		# Translators: Error message when connection status change times out.
+		ui.message(_("Connection status change timed out for {}").format(deviceName))
+		wx.CallAfter(self._restoreFocus)
 
 	def _restoreFocus(self) -> None:
 		"""Return focus to the device row after the app refreshes its controls."""
@@ -249,9 +232,6 @@ class AppModule(appModuleHandler.AppModule):
 		Inject the overlay only for rows that expose the expected device status.
 		"""
 		if obj.role == controlTypes.Role.LISTITEM:
-			try:
-				rawText = obj.parent.previous.name
-				if rawText and _parseDeviceStatus(rawText) != (rawText, rawText):
-					clsList.insert(0, BluetoothListItem)
-			except AttributeError:
-				pass
+			rawText = _getStatusTextFor(obj)
+			if rawText and _parseDeviceStatus(rawText) != (rawText, rawText):
+				clsList.insert(0, BluetoothListItem)

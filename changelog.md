@@ -1,3 +1,16 @@
+# Version 1.3.1
+
+## Compatibility
+
+- Tested with NVDA 2026.3. The minimum supported NVDA version remains 2024.1.
+
+## Fixes
+
+- Fixed device rows that could fail to load in NVDA when the app refreshed its list while NVDA was reading it. Errors from the app's controls are now handled instead of only missing-attribute errors.
+- Connection monitoring now keeps waiting when the device status cannot be read for a moment, and reports a timeout instead of stopping silently.
+- Focus now returns to the device row after every timeout, not only after some of them.
+- The launch command (NVDA+Windows+B) now restores the Bluetooth Audio Receiver window when it is minimized before bringing it to the front.
+
 # Version 1.3.0
 
 ## Compatibility
