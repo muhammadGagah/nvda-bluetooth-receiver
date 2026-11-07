@@ -3,6 +3,7 @@
 # Copyright (C) 2026 Muhammad
 # addon/globalPlugins/accessibleBluetoothAudioReceiver/__init__.py
 
+import ctypes
 import os
 from typing import Any
 
@@ -20,6 +21,7 @@ addonHandler.initTranslation()
 APP_MODULE_NAME = "bluetoothaudioreceiver"
 APP_WINDOW_TITLE = "Bluetooth Audio Receiver"
 APP_SHELL_URI = r"shell:AppsFolder\55746MarkSmirnov.BluetoothAudioReveicer_xwrbx6997tsfc!App"
+SW_RESTORE = 9
 APP_EXECUTABLE_ALIASES = (
 	"bluetooth audio receiver",
 	"bluetooth audio reveicer",
@@ -34,6 +36,15 @@ def _getAppWindow() -> int:
 	if not hwnd:
 		hwnd = winUser.FindWindow(None, APP_WINDOW_TITLE)
 	return hwnd if hwnd and winUser.isWindowVisible(hwnd) else 0
+
+
+def _activateAppWindow(hwnd: int) -> None:
+	"""Bring the window to the front, restoring it first when it is minimized."""
+	user32 = ctypes.windll.user32
+	if user32.IsIconic(hwnd):
+		# SetForegroundWindow does not un-minimize a window; restore it first.
+		user32.ShowWindow(hwnd, SW_RESTORE)
+	winUser.setForegroundWindow(hwnd)
 
 
 class GlobalPlugin(globalPluginHandler.GlobalPlugin):
@@ -77,7 +88,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		try:
 			hwnd = _getAppWindow()
 			if hwnd:
-				winUser.setForegroundWindow(hwnd)
+				_activateAppWindow(hwnd)
 				# Translators: Message displayed when the application is already running.
 				ui.message(_("Bluetooth Audio Receiver is already running."))
 				return
